@@ -1,0 +1,177 @@
+{% load bootstrap4 %}
+{% load static %}
+
+<html>
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="{% static 'favicon.ico' %}" rel="icon" type="image/x-icon" />
+</head>
+<body>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.12"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"></link>
+
+<script src="https://cdn.jsdelivr.net/npm/vue-toast-notification@0.6.1/dist/index.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/vue-toast-notification/dist/theme-sugar.css" rel="stylesheet" />
+
+{% bootstrap_css %}
+{% bootstrap_javascript jquery='full' %}
+
+<style type="text/css">
+	.jumbotron-image {
+		background-image: url({% static 'leaves2.jpg' %});
+		background-position: center center;
+		background-repeat: no-repeat;
+		background-size: cover;
+	}
+</style>
+
+{# Display django.contrib.messages as Bootstrap alerts #}
+{% bootstrap_messages %}
+
+<div class="jumbotron jumbotron-fluid text-white jumbotron-image shadow">
+	<div class="container-fluid">
+		<h2 class="mb-4">PJ Plant Saver</h2>
+		<p class="mb-4">
+			Watering by hand is for suckers.
+		</p>
+		</div>
+	</div>
+</div>
+
+<div id="app">
+ 
+	{% for p in newData.pump_set.all %}
+	<div>
+		{{ p }}
+	
+	</div>
+	{% endfor %}
+ 
+	<div class="table-responsive">
+
+		<table class="table">
+			<thead class="thead-dark">
+				<tr>
+					<th scope="col">Name</th>
+					<th scope="col">Moisture</th>
+					<th scope="col">Pump</th>
+					<th scope="col">Status</th>
+					<th scope="col">
+						<button type="button" class="btn btn-danger" v-on:click="stopAll">Stop All Pumps</button>				
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="plant in plants">
+					<td>[[ plant.name ]]</td>
+					<td>[[ plant.moisture ]]</td>
+					<td>[[ plant.pump ]]</td>
+					<td>
+						<i v-show="plant.isRunning" class="fas fa-tint" style="color: blue"></i>
+						<i v-show="plant.isRunning" class="fas fa-tint" style="color: blue"></i>
+						<i v-show="!plant.isRunning" class="fas fa-tint-slash" style="color: gray"></i>
+					</td>
+					<td>
+						<button type="button" class="btn btn-primary" 
+							v-show="plant.pump"  
+							v-bind:disabled="plant.isRunning != 0" 
+							v-bind:class="{ disabled: plant.isRunning }" 
+							v-on:click="waterPlant(plant.id, plant.waterSeconds)">
+							<i v-show="plant.isRunning" class="fas fa-spinner fa-spin"></i>
+							Water ([[ plant.waterSeconds ]] sec)
+						</button>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		
+		<button type="button" class="btn btn-info" v-on:click="refresh">Refresh</button>
+	
+	</div>
+</div>
+
+<!-- context model data -->
+{{ plants | json_script:"js-plants" }}
+
+<script type="text/javascript">
+	Vue.use(VueToast);
+	
+	var app = new Vue({
+		el: '#app',
+		delimiters: ["[[", "]]"],
+		data: {
+			plants: JSON.parse(document.getElementById('js-plants').textContent)
+		},
+		methods: {
+		
+			getPlant: function(plantId) {
+				for (const key in this._data.plants) {
+					var plant = this._data.plants[key];
+					
+					if (plant.id == plantId) {
+						return plant;
+					}
+				}	
+				
+				return null;
+			},
+			
+			refresh: function() {
+				location.reload();
+			},
+			
+			setPumpIsRunning: function(plantId) {
+				var plant = this.getPlant(plantId);
+				plant.isRunning = true;
+			},
+			
+			setPumpIsStopped: function(plantId) {
+				var plant = this.getPlant(plantId);
+				plant.isRunning = false;
+			},
+
+			stopAll: function () {
+				axios.get('/stopAllPumps')
+					.then((response) => {
+						console.log("Stopped all pumps");
+
+						for (const key in this._data.plants) {
+							var plant = this._data.plants[key];
+							plant.isRunning = false;
+						}	
+
+						Vue.$toast.open({
+							message: "Stopped all pumps",
+							type: "success",
+							duration: 2000,
+							dismissible: true,
+							position: "top-right"
+						})
+					});
+			},
+			
+			waterPlant: function(plantId, seconds) {
+				Vue.$toast.open({
+					message: "Watering plant #" + plantId,
+					type: "success",
+					duration: seconds * 1000,
+					dismissible: true,
+					position: "top-right"
+				});
+				this.setPumpIsRunning(plantId);
+				axios.get('/waterPlant?plantId=' + plantId + '&seconds=' + seconds)
+					.then((response) => {
+						this.setPumpIsStopped(plantId);
+						console.log("Watering log: " + response.data.toString());
+					});
+			}			
+		}		
+	});
+
+</script>
+
+
+</body>
+</html>

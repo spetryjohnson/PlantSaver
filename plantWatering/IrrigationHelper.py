@@ -59,7 +59,7 @@ def getFullStatus():
 		row = {
 			"id": plant.id,
 			"name": str(plant),
-			"waterSeconds": 5,
+			"waterSeconds": 10,
 			"moisture":  "",
 			"pump": "",
 			"zone": "",

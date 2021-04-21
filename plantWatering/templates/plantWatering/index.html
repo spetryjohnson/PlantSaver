@@ -27,6 +27,18 @@
 		background-repeat: no-repeat;
 		background-size: cover;
 	}
+	
+	.circle-crop {
+		clip-path: circle();
+	}
+	
+	.current-moisture { 
+		font-size: 0.75em; color: gray; font-weight: normal; 
+	}
+	
+	.last-watered {
+	
+	}
 </style>
 
 {# Display django.contrib.messages as Bootstrap alerts #}
@@ -53,18 +65,22 @@
 				<div class="card">
 					<h5 class="card-header">
 						[[ plant.name ]]
+						
 						<i v-show="plant.isRunning" class="fas fa-tint float-right" style="color: blue"></i>
 						<i v-show="plant.isRunning" class="fas fa-tint float-right" style="color: blue"></i>
 						<i v-show="!plant.isRunning" class="fas fa-tint-slash float-right" style="color: gray"></i>
 					</h5>
 					<div class="card-body">
 						<!-- <h5 class="card-title">Special title treatment</h5> -->
-						<p class="card-text">
+						<img v-bind:src="'{% static 'plantWatering/' %}plant_' + plant.id + '.png'" class="rounded" width="75">
+						<div v-show="plant.moisture != ''" class="current-moisture float-right">moisture [[ plant.moisture ]]</div>
+						
+						<p class="card-text last-watered">
+							Last watered 
 							<timeago v-if="plant.latestLog" :datetime="plant.latestLog.logDateTime" :auto-update="60"></timeago>
 							<span v-if="!plant.latestLog"><b>never</b></span>
-							<br/><br/>
-							Moisture: [[ plant.moisture ]]
 						</p>
+						
 						<button type="button" class="btn btn-primary" 
 							v-show="plant.pump"  
 							v-bind:disabled="plant.isRunning != 0" 

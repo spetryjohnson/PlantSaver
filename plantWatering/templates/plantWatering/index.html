@@ -15,6 +15,8 @@
 <script src="https://cdn.jsdelivr.net/npm/vue-toast-notification@0.6.1/dist/index.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/vue-toast-notification/dist/theme-sugar.css" rel="stylesheet" />
 
+<script src="https://cdn.jsdelivr.net/npm/vue-timeago@5.1.3/dist/vue-timeago.js"></script>
+
 {% bootstrap_css %}
 {% bootstrap_javascript jquery='full' %}
 
@@ -56,6 +58,7 @@
 				<tr>
 					<th scope="col">Name</th>
 					<th scope="col">Moisture</th>
+					<th scope="col">Last Water</th>
 					<th scope="col">Pump</th>
 					<th scope="col">Status</th>
 					<th scope="col">
@@ -67,6 +70,10 @@
 				<tr v-for="plant in plants">
 					<td>[[ plant.name ]]</td>
 					<td>[[ plant.moisture ]]</td>
+					<td>
+						<timeago v-if="plant.latestLog" :datetime="plant.latestLog.logDateTime" :auto-update="60"></timeago>
+						<span v-if="!plant.latestLog"><b>never</b></span>
+					</td>
 					<td>[[ plant.pump ]]</td>
 					<td>
 						<i v-show="plant.isRunning" class="fas fa-tint" style="color: blue"></i>
@@ -96,8 +103,16 @@
 {{ plants | json_script:"js-plants" }}
 
 <script type="text/javascript">
-	Vue.use(VueToast);
 	
+	Vue.use(VueToast);
+
+	Vue.use(window.VueTimeago, {
+	  name: 'Timeago', // Component name, `Timeago` by default
+	  locale: 'en' // Default locale
+	  // We use `date-fns` under the hood
+	  // So you can use all locales from it
+	})	
+
 	var app = new Vue({
 		el: '#app',
 		delimiters: ["[[", "]]"],

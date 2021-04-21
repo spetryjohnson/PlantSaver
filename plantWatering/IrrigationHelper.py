@@ -43,13 +43,18 @@ def getFullStatus():
 			currentMoisture = "** error **"
 	
 		sensorReadings[sensor.id] = currentMoisture
-
+		
 	# tie it all together in a plant-focused dict
 	data = {}
 
 	for plant in Plant.objects.all():
 		pump = plant.pump
 		sensor = plant.sensor
+		
+		latestLogs = WateringLog.objects.all() \
+			.filter(plant_id = plant.id) \
+			.values("logDateTime", "durationSeconds") \
+			.order_by("-logDateTime")[:1]
 	
 		row = {
 			"id": plant.id,
@@ -58,7 +63,8 @@ def getFullStatus():
 			"moisture":  "",
 			"pump": "",
 			"zone": "",
-			"isRunning": False
+			"isRunning": False,
+			"latestLog": latestLogs[0] if len(latestLogs) > 0 else None
 		}
 
 		if (pump is not None):
@@ -70,6 +76,8 @@ def getFullStatus():
 			row["moisture"] = sensorReadings[sensor.id]
 			
 		data[plant.id] = row
+	
+	GPIO.cleanup()
 	
 	return data
 
@@ -105,6 +113,8 @@ def waterPlant(plantId, durationSeconds):
 	time.sleep(int(durationSeconds))
 	stopPump(plant.pump)
 	
+	GPIO.cleanup()
+	
 	return log
 	
 def stopAllPumps():
@@ -113,6 +123,8 @@ def stopAllPumps():
 	for zonePin in ZONE_PINS:
 		GPIO.setup(zonePin, GPIO.OUT)
 		GPIO.output(zonePin, GPIO.LOW)
+		
+	GPIO.cleanup()
 
 def getPlant(id):
 	return Plant.objects.get(pk=id)

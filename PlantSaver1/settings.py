@@ -31,7 +31,7 @@ SECRET_KEY = 'u&*5+t$30)up#&)gn*(qu^lj07$*oy0=zi4*04xy+m!e4f&747'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["PlantSaver.localhost.com", "192.168.86.40", "192.168.0.20"]
+ALLOWED_HOSTS = ["PlantSaver.pj-home.tech", "PlantSaver.localhost.com", "192.168.86.40", "192.168.0.20"]
 
 
 # Application definition

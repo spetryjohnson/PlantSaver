@@ -64,21 +64,35 @@
 			<div v-for="plant in plants" class="col mb-3">
 				<div class="card">
 					<h5 class="card-header">
-						[[ plant.name ]]
+						<a v-bind:href="'/admin/plantWatering/plant/' + plant.id + '/change/'">
+							[[ plant.name ]]
+						</a>
 						
 						<i v-show="plant.isRunning" class="fas fa-tint float-right" style="color: blue"></i>
 						<i v-show="plant.isRunning" class="fas fa-tint float-right" style="color: blue"></i>
 						<i v-show="!plant.isRunning" class="fas fa-tint-slash float-right" style="color: gray"></i>
 					</h5>
 					<div class="card-body">
-						<!-- <h5 class="card-title">Special title treatment</h5> -->
-						<img v-bind:src="plant.imageUrl" class="rounded" width="75">
-						<div v-show="plant.moisture != ''" class="current-moisture float-right">moisture [[ plant.moisture ]]</div>
+						<!-- photo / icon -->
+						<img v-if="plant.imageUrl" v-bind:src="plant.imageUrl" class="rounded" width="75">
+						<div v-if="!plant.imageUrl" style="height: 75px; width: 75px; font-size: 75px;">
+							<i class="fas fa-seedling" style="color: green;"></i>
+						</div>
+						
+						<div v-show="plant.moisture != ''" class="current-moisture float-right">
+							moisture [[ plant.moisture ]]
+						</div>
 						
 						<p class="card-text last-watered">
 							Last watered 
-							<timeago v-if="plant.latestLog" :datetime="plant.latestLog.logDateTime" :auto-update="60"></timeago>
+							<timeago v-if="plant.lastWatered" :datetime="plant.lastWatered" :auto-update="60"></timeago>
 							<span v-if="!plant.latestLog"><b>never</b></span>
+						</p>
+						
+						<p class="card-text last-watered">
+							Water again
+							<timeago v-if="plant.nextWater" :datetime="plant.nextWater" :auto-update="60"></timeago>
+							<span v-if="!plant.nextWater"><b>now</b></span>
 						</p>
 						
 						<button type="button" class="btn btn-primary" 

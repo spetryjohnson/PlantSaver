@@ -1,4 +1,5 @@
 import time
+from datetime import timedelta
 import asyncio
 from asgiref.sync import sync_to_async
 from django.conf import settings
@@ -60,13 +61,15 @@ def getFullStatus():
 		row = {
 			"id": plant.id,
 			"name": str(plant),
+			"imageUrl": "",
 			"waterSeconds": 10,
 			"moisture":  "",
 			"pump": "",
 			"zone": "",
 			"isRunning": False,
-			"latestLog": latestLogs[0] if len(latestLogs) > 0 else None,
-			"imageUrl": ""
+			"latestLog": None,
+			"lastWatered": None,
+			"nextWater": None
 		}
 
 		if (pump is not None):
@@ -77,8 +80,14 @@ def getFullStatus():
 		if (sensor is not None):
 			row["moisture"] = sensorReadings[sensor.id]
 			
-		if (plant.image is not None):
+		if (plant.image):
 			row["imageUrl"] = plant.image.url
+		
+		if (len(latestLogs) > 0):
+			latestLog = latestLogs[0]
+			row["latestLog"] = latestLog
+			row["lastWatered"] = latestLog["logDateTime"]
+			row["nextWater"] = latestLog["logDateTime"] + timedelta(days = plant.waterFrequencyDays)
 			
 		data[plant.id] = row
 	

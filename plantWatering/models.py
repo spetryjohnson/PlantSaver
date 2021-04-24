@@ -1,4 +1,13 @@
+import os
 from django.db import models
+
+# callable passed to the upload field for the plant
+def getPlantPhotoUploadPath(path):
+	def wrapper(instance, filename):
+		ext = filename.split('.')[-1]
+		filename = 'plant_{}.{}'.format(instance.pk, ext)
+		return os.path.join(path, filename)
+	return wrapper
 
 class Pump(models.Model):
 	PUMP_TYPES = [
@@ -23,7 +32,7 @@ class SoilSensor(models.Model):
 	description = models.CharField(max_length=50, null=True, blank=True)
 	type = models.CharField(max_length=10, choices=SENSOR_TYPES)
 	i2cAddr = models.CharField(max_length=5, null=True, blank=True)
-	analogInputNumber = models.IntegerField(null=True, blank=True)
+	analogInputNumber = models.IntegerField(null=True, blank=True) 
 	
 	def __str__(self):
 		return 'Sensor #' + str(self.id)
@@ -33,6 +42,9 @@ class Plant(models.Model):
 	description = models.CharField(max_length=50, null=True, blank=True)
 	pump = models.ForeignKey(Pump, on_delete=models.SET_NULL, null=True, blank=True)
 	sensor = models.ForeignKey(SoilSensor, on_delete=models.SET_NULL, null=True, blank=True)
+	waterFrequencyDays = models.IntegerField(null=False, blank=False)
+	waterDurationSeconds = models.IntegerField(null=False, blank=False)
+	image = models.ImageField(upload_to=getPlantPhotoUploadPath("plantPhotos/"), null=True, blank=True)
 	
 	def __str__(self):
 		return 'Plant #' + str(self.id)

@@ -72,7 +72,7 @@
 					</h5>
 					<div class="card-body">
 						<!-- <h5 class="card-title">Special title treatment</h5> -->
-						<img v-bind:src="'{% static 'plantWatering/' %}plant_' + plant.id + '.png'" class="rounded" width="75">
+						<img v-bind:src="plant.imageUrl" class="rounded" width="75">
 						<div v-show="plant.moisture != ''" class="current-moisture float-right">moisture [[ plant.moisture ]]</div>
 						
 						<p class="card-text last-watered">

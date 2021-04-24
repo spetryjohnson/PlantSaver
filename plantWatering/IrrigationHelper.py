@@ -1,6 +1,7 @@
 import time
 import asyncio
 from asgiref.sync import sync_to_async
+from django.conf import settings
 
 # for RPi control
 from w1thermsensor import W1ThermSensor
@@ -64,7 +65,8 @@ def getFullStatus():
 			"pump": "",
 			"zone": "",
 			"isRunning": False,
-			"latestLog": latestLogs[0] if len(latestLogs) > 0 else None
+			"latestLog": latestLogs[0] if len(latestLogs) > 0 else None,
+			"imageUrl": ""
 		}
 
 		if (pump is not None):
@@ -74,6 +76,9 @@ def getFullStatus():
 			
 		if (sensor is not None):
 			row["moisture"] = sensorReadings[sensor.id]
+			
+		if (plant.image is not None):
+			row["imageUrl"] = plant.image.url
 			
 		data[plant.id] = row
 	

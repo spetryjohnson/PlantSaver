@@ -39,6 +39,10 @@
 	.last-watered {
 	
 	}
+	
+	.past-due {
+		color: red;
+	}
 </style>
 
 {# Display django.contrib.messages as Bootstrap alerts #}
@@ -58,6 +62,7 @@
 	<div class="container" style="margin-bottom: 20px">
 		<button type="button" class="btn btn-info" v-on:click="refresh">Refresh</button>
 		<button type="button" class="btn btn-danger" v-on:click="stopAll">Stop All Pumps</button>				
+		<button type="button" class="btn btn-info float-right" v-on:click="refreshMQTT">Refresh MQTT</button>				
 	</div>
 	<div class="container">
 		<div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5">
@@ -89,7 +94,7 @@
 							<span v-if="!plant.latestLog"><b>never</b></span>
 						</p>
 						
-						<p class="card-text last-watered">
+						<p class="card-text last-watered" :class="{ 'past-due':  plantIsPastDue(plant.id) }">
 							Water again
 							<timeago v-if="plant.nextWater" :datetime="plant.nextWater" :auto-update="60"></timeago>
 							<span v-if="!plant.nextWater"><b>now</b></span>
@@ -145,8 +150,28 @@
 				return null;
 			},
 			
+			plantIsPastDue: function(plantId) {
+				var plant = this.getPlant(plantId);
+				return Date.parse(plant.nextWater) < new Date();
+			},
+			
 			refresh: function() {
 				location.reload();
+			},
+			
+			refreshMQTT: function() {
+				axios.get('/pushStatusToMQTT')
+					.then((response) => {
+						console.log("refreshed MQTT");
+
+						Vue.$toast.open({
+							message: "Refreshed MQTT",
+							type: "success",
+							duration: 2000,
+							dismissible: true,
+							position: "top-right"
+						})
+					});
 			},
 			
 			setPumpIsRunning: function(plantId) {

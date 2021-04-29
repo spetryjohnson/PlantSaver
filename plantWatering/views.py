@@ -3,7 +3,7 @@ import json
 import asyncio
 
 from distutils import util
-from django.shortcuts import render
+from django.shortcuts import render 
 from django.shortcuts import redirect
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -12,6 +12,8 @@ from django.contrib import messages
 
 from plantWatering import IrrigationHelper
 from plantWatering.models import Plant
+
+import paho.mqtt.client as mqtt
 
 def index(request):
 	context = {
@@ -31,3 +33,16 @@ def waterPlant(request):
 def stopAllPumps(request):
 	IrrigationHelper.stopAllPumps()
 	return HttpResponse("All pumps stopped")
+	
+def pushStatusToMQTT(request):
+	plants = IrrigationHelper.getFullStatus()
+	
+	mqttClient = mqtt.Client("PlantSaver")
+	mqttClient.connect("mqtt.pj-home.tech")	
+	
+	for plantId, plant in plants.items():
+		mqttClient.publish("home/plants/plant%i/nextWater" % (plant["id"]), str(plant["nextWater"]), retain=True)
+	
+	mqttClient.disconnect()	
+	
+	return HttpResponse("done")

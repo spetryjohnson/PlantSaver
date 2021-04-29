@@ -8,4 +8,5 @@ urlpatterns = [
 	path('', views.index, name='index'),
 	path('waterPlant', views.waterPlant),
 	path('stopAllPumps', views.stopAllPumps),
+	path('pushStatusToMQTT', views.pushStatusToMQTT),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
